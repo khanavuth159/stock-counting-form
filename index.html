@@ -4,59 +4,105 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Stock Counting</title>
+  <style>
+    .ingredient-container {
+      margin-bottom: 10px;
+    }
+    .ingredient-name {
+      display: inline-block;
+      width: 150px;
+    }
+    .ingredient-input {
+      width: 60px;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
   <h1>Stock Counting</h1>
-  <div>
-    <label for="ingredient">Ingredient: </label>
-    <select id="ingredient" name="ingredient" required></select>
-  </div>
-  <div>
-    <label for="unit">Unit: </label>
-    <input type="text" id="unit" name="unit" disabled required>
-  </div>
-  <div>
-    <label for="quantity">Quantity: </label>
-    <input type="number" id="quantity" name="quantity" required>
-  </div>
+
+  <div id="ingredients-list"></div>
+
   <button onclick="submitStock()">Submit</button>
 
   <script>
     // Fetch ingredient and unit list from Google Apps Script
-    fetch('https://script.google.com/macros/s/AKfycbwtfSbDKYH7cXjHsnMK3BXhavs4jVpRZkLZTdQq62mMefTy-qVVWdQ_UFui73ZQlLA/exec')
+    fetch('https://script.google.com/macros/s/AKfycbwKdGbOflXv4XUhe3xsYpkIVnan9qDx3W9A7M6X_GKMMzt2TN_R2f5li3mW91hX705m/exec')
       .then(response => response.json())
       .then(data => {
-        const ingredientSelect = document.getElementById('ingredient');
+        const ingredientsListDiv = document.getElementById('ingredients-list');
         data.forEach(item => {
-          const option = document.createElement('option');
-          option.value = item.ingredient;
-          option.text = item.ingredient;
-          ingredientSelect.appendChild(option);
-        });
+          // Create a div for each ingredient
+          const ingredientDiv = document.createElement('div');
+          ingredientDiv.classList.add('ingredient-container');
+          
+          // Create the ingredient name and unit
+          const ingredientName = document.createElement('span');
+          ingredientName.classList.add('ingredient-name');
+          ingredientName.textContent = item.ingredient;
 
-        // Update unit when ingredient is selected
-        ingredientSelect.addEventListener('change', function() {
-          const selectedIngredient = ingredientSelect.value;
-          const selectedItem = data.find(item => item.ingredient === selectedIngredient);
-          document.getElementById('unit').value = selectedItem ? selectedItem.unit : '';
+          // Create the input field for the quantity with +/- buttons
+          const quantityInputDiv = document.createElement('span');
+          const minusButton = document.createElement('button');
+          minusButton.textContent = '-';
+          minusButton.onclick = () => changeQuantity(ingredientDiv, -1);
+          
+          const quantityInput = document.createElement('input');
+          quantityInput.type = 'number';
+          quantityInput.value = 0;
+          quantityInput.classList.add('ingredient-input');
+          quantityInput.setAttribute('data-unit', item.unit);
+          
+          const plusButton = document.createElement('button');
+          plusButton.textContent = '+';
+          plusButton.onclick = () => changeQuantity(ingredientDiv, 1);
+
+          quantityInputDiv.appendChild(minusButton);
+          quantityInputDiv.appendChild(quantityInput);
+          quantityInputDiv.appendChild(plusButton);
+          
+          // Append the ingredient name, input, and buttons to the ingredient div
+          ingredientDiv.appendChild(ingredientName);
+          ingredientDiv.appendChild(quantityInputDiv);
+
+          // Append the ingredient div to the ingredients list
+          ingredientsListDiv.appendChild(ingredientDiv);
         });
       });
 
-    // Function to submit stock data
+    // Function to change the quantity
+    function changeQuantity(ingredientDiv, change) {
+      const quantityInput = ingredientDiv.querySelector('input');
+      let currentQuantity = parseInt(quantityInput.value);
+      if (isNaN(currentQuantity)) currentQuantity = 0;
+      currentQuantity += change;
+      quantityInput.value = currentQuantity < 0 ? 0 : currentQuantity;
+    }
+
+    // Function to collect the stock data and submit
     function submitStock() {
-      const ingredient = document.getElementById('ingredient').value;
-      const unit = document.getElementById('unit').value;
-      const quantity = document.getElementById('quantity').value;
+      const ingredients = [];
+      const ingredientContainers = document.querySelectorAll('.ingredient-container');
+      
+      ingredientContainers.forEach(container => {
+        const ingredientName = container.querySelector('.ingredient-name').textContent;
+        const quantityInput = container.querySelector('input');
+        const unit = quantityInput.getAttribute('data-unit');
+        const quantity = quantityInput.value;
 
-      const stockData = {
-        ingredient: ingredient,
-        unit: unit,
-        quantity: quantity
-      };
+        if (quantity > 0) {
+          ingredients.push({
+            ingredient: ingredientName,
+            unit: unit,
+            quantity: quantity
+          });
+        }
+      });
 
+      // Send the data to the Google Apps Script endpoint
       fetch('https://script.google.com/macros/s/AKfycbwKdGbOflXv4XUhe3xsYpkIVnan9qDx3W9A7M6X_GKMMzt2TN_R2f5li3mW91hX705m/exec', {
         method: 'POST',
-        body: JSON.stringify(stockData),
+        body: JSON.stringify(ingredients),
         headers: {
           'Content-Type': 'application/json'
         }
