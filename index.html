@@ -1,88 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Counting</title>
-    <style>
-        .ingredient-container {
-            margin-bottom: 10px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Counting</title>
 </head>
-
 <body>
-    <h1>Stock Counting</h1>
+  <h1>Stock Counting</h1>
 
-    <div id="ingredient-list">
-        <!-- Ingredients will be dynamically added here -->
+  <!-- Loop through the ingredients array passed from Apps Script -->
+  <? for (var i = 0; i < ingredients.length; i++) { ?>
+    <div>
+      <label for="ingredient-<?= i ?>">Ingredient: </label>
+      <span><?= ingredients[i][0] ?></span> <!-- Ingredient name -->
+      <input type="number" id="quantity-<?= i ?>" name="quantity" required> <!-- Quantity input -->
+      <span><?= ingredients[i][1] ?></span> <!-- Ingredient unit -->
     </div>
+  <? } ?>
 
-    <button onclick="submitStock()">Submit</button>
+  <button onclick="submitStock()">Submit</button>
 
-    <script>
-        // Fetch ingredient list and units from Google Sheets
-        fetch('https://script.google.com/macros/s/AKfycbzTBBP4ksolnNpbvpzHh3_SniQi6O7UP61VXe5Nut32lORhNimn_f3GVHIMFpHVxRIf/exec')
-            .then(response => response.json())
-            .then(data => {
-                const ingredientListContainer = document.getElementById('ingredient-list');
-                data.forEach(item => {
-                    // Create ingredient input fields with unit display
-                    const ingredientDiv = document.createElement('div');
-                    ingredientDiv.className = 'ingredient-container';
-                    ingredientDiv.innerHTML = `
-                        <label for="${item.ingredient}">${item.ingredient}</label>
-                        <button onclick="updateQuantity('${item.ingredient}', -1)">-</button>
-                        <input type="number" id="${item.ingredient}" data-unit="${item.unit}" />
-                        <button onclick="updateQuantity('${item.ingredient}', 1)">+</button>
-                        <span>${item.unit}</span>
-                    `;
-                    ingredientListContainer.appendChild(ingredientDiv);
-                });
-            })
-            .catch(error => console.error('Error fetching ingredients:', error));
-
-        // Function to update the quantity
-        function updateQuantity(ingredient, delta) {
-            const inputField = document.getElementById(ingredient);
-            let currentValue = parseInt(inputField.value) || 0;
-            inputField.value = currentValue + delta;
+  <script>
+    function submitStock() {
+      var data = [];
+      for (var i = 0; i < <?= ingredients.length ?>; i++) {
+        var quantity = document.getElementById('quantity-' + i).value;
+        if (quantity) {
+          data.push({
+            ingredient: '<?= ingredients[i][0] ?>',
+            unit: '<?= ingredients[i][1] ?>',
+            quantity: quantity
+          });
         }
-
-        // Function to submit the stock data
-        function submitStock() {
-            const stockData = [];
-            const inputs = document.querySelectorAll('input[type="number"]');
-            inputs.forEach(input => {
-                const ingredient = input.id;
-                const quantity = input.value;
-                const unit = input.getAttribute('data-unit');
-                if (quantity) {
-                    stockData.push({
-                        ingredient: ingredient,
-                        unit: unit,
-                        quantity: quantity
-                    });
-                }
-            });
-
-            // Send data to Google Apps Script
-            fetch('https://script.google.com/macros/s/AKfycbwKdGbOflXv4XUhe3xsYpkIVnan9qDx3W9A7M6X_GKMMzt2TN_R2f5li3mW91hX705m/exec', {
-                method: 'POST',
-                body: JSON.stringify(stockData),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-                .then(response => response.text())
-                .then(data => {
-                    alert('Stock submitted!');
-                    console.log(data);
-                })
-                .catch(error => console.error('Error submitting stock:', error));
+      }
+      
+      fetch('https://script.google.com/macros/s/AKfycbwClUzHtiGFHnuo-8PQE2TNAIL_YojOT7eHENqrdl-WhQvgcUEThl87lxCoIz5Mg9ry/exec', {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: {
+          'Content-Type': 'application/json'
         }
-    </script>
+      })
+      .then(response => response.text())
+      .then(data => {
+        alert('Stock submitted!');
+        console.log(data);
+      })
+      .catch(error => console.error('Error:', error));
+    }
+  </script>
 </body>
-
 </html>
