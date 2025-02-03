@@ -1,53 +1,79 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stock Counting</title>
+    <title>Stock Counting</title>
 </head>
 <body>
-  <h1>Stock Counting</h1>
+    <h1>Select Supplier</h1>
+    <form id="supplierForm">
+        <select id="supplier" name="supplier">
+            <option value="Supplier1">Supplier 1</option>
+            <option value="Supplier2">Supplier 2</option>
+            <option value="Supplier3">Supplier 3</option>
+        </select>
+        <button type="button" onclick="loadIngredients()">Next</button>
+    </form>
+    <div id="ingredientList"></div>
 
-  <!-- Loop through the ingredients array passed from Apps Script -->
-  <? for (var i = 0; i < ingredients.length; i++) { ?>
-    <div>
-      <label for="ingredient-<?= i ?>">Ingredient: </label>
-      <span><?= ingredients[i][0] ?></span> <!-- Ingredient name -->
-      <input type="number" id="quantity-<?= i ?>" name="quantity" required> <!-- Quantity input -->
-      <span><?= ingredients[i][1] ?></span> <!-- Ingredient unit -->
-    </div>
-  <? } ?>
+    <script>
+        function loadIngredients() {
+            const supplier = document.getElementById('supplier').value;
+            // Fetch ingredients based on the selected supplier (this can be done via an API or static data)
+            const ingredients = {
+                'Supplier1': ['Ingredient1', 'Ingredient2'],
+                'Supplier2': ['Ingredient3', 'Ingredient4'],
+                'Supplier3': ['Ingredient5', 'Ingredient6'],
+            };
 
-  <button onclick="submitStock()">Submit</button>
-
-  <script>
-    function submitStock() {
-      var data = [];
-      for (var i = 0; i < <?= ingredients.length ?>; i++) {
-        var quantity = document.getElementById('quantity-' + i).value;
-        if (quantity) {
-          data.push({
-            ingredient: '<?= ingredients[i][0] ?>',
-            unit: '<?= ingredients[i][1] ?>',
-            quantity: quantity
-          });
+            let html = `<h2>Ingredients for ${supplier}</h2><form id="countForm">`;
+            ingredients[supplier].forEach(ingredient => {
+                html += `
+                    <div>
+                        <label>${ingredient}:</label>
+                        <button type="button" onclick="changeQuantity('${ingredient}', -1)">-</button>
+                        <input type="number" id="${ingredient}" value="0" min="0">
+                        <button type="button" onclick="changeQuantity('${ingredient}', 1)">+</button>
+                        <span>grams</span>
+                    </div>`;
+            });
+            html += `
+                <input type="text" id="staffName" placeholder="Your Name" required>
+                <button type="button" onclick="submitForm('${supplier}')">Submit</button>
+            </form>`;
+            document.getElementById('ingredientList').innerHTML = html;
         }
-      }
-      
-      fetch('https://script.google.com/macros/s/AKfycbxbjZJ8l4LLZ8jsyC6b24HBkp1tKODd0E4x4Xrdc_YKxvXC0RwdF3tdzVq_zicOXQnz/exec', {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: {
-          'Content-Type': 'application/json'
+
+        function changeQuantity(ingredient, change) {
+            const input = document.getElementById(ingredient);
+            input.value = Math.max(0, parseInt(input.value) + change);
         }
-      })
-      .then(response => response.text())
-      .then(data => {
-        alert('Stock submitted!');
-        console.log(data);
-      })
-      .catch(error => console.error('Error:', error));
-    }
-  </script>
+
+        function submitForm(supplier) {
+            const staffName = document.getElementById('staffName').value;
+            const quantities = {};
+            document.querySelectorAll('#countForm input[type="number"]').forEach(input => {
+                quantities[input.id] = input.value;
+            });
+
+            const data = {
+                supplier,
+                quantities,
+                staffName,
+                timestamp: new Date().toISOString(),
+            };
+
+            // Send data to Google Sheets (use a server-side script or Google Apps Script)
+            fetch('https://script.google.com/macros/s/AKfycbwA6Qx1lDdoHuKaS0hUkeRXkhUFne48k4naTEsfwRtwj6Vz4VGTs7o8m4Z4nZdfCUgQ/exec', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            }).then(response => {
+                if (response.ok) {
+                    alert('Stock counted successfully!');
+                    // Reset the form or redirect as needed
+                }
+            });
+        }
+    </script>
 </body>
 </html>
