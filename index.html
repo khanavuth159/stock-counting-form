@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Counting</title>
+</head>
+<body>
+    <h1>Stock Counting</h1>
+    <div>
+        <label for="ingredient">Ingredient: </label>
+        <input type="text" id="ingredient" name="ingredient" required>
+    </div>
+    <div>
+        <label for="unit">Unit: </label>
+        <input type="text" id="unit" name="unit" required>
+    </div>
+    <div>
+        <label for="quantity">Quantity: </label>
+        <input type="number" id="quantity" name="quantity" required>
+    </div>
+    <button onclick="submitStock()">Submit</button>
+
+    <script>
+        function submitStock() {
+            const ingredient = document.getElementById('ingredient').value;
+            const unit = document.getElementById('unit').value;
+            const quantity = document.getElementById('quantity').value;
+
+            const stockData = {
+                ingredient: ingredient,
+                unit: unit,
+                quantity: quantity
+            };
+
+            fetch('https://script.google.com/macros/s/AKfycbwKdGbOflXv4XUhe3xsYpkIVnan9qDx3W9A7M6X_GKMMzt2TN_R2f5li3mW91hX705m/exec', {
+                method: 'POST',
+                body: JSON.stringify(stockData),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert('Stock submitted!');
+                console.log(data);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>
