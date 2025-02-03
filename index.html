@@ -19,7 +19,6 @@
         <select id="supplier" name="supplier">
             <option value="Supplier 1">Supplier 1</option>
             <option value="Supplier 2">Supplier 2</option>
-            <option value="Supplier 3">Supplier 3</option>
         </select>
         <button type="button" onclick="loadIngredients()">Next</button>
     </form>
@@ -28,7 +27,7 @@
     <script>
         function loadIngredients() {
             const supplier = document.getElementById('supplier').value;
-            fetch(`https://script.google.com/macros/s/AKfycbwlhlvnVio2qtDS8tfNxaGNnh5Mw7zc4CIsLxPQwgjV-sM4rPoUQyWJA6L2mRFKodxs/exec?supplier=${supplier}`)
+            fetch(`https://script.google.com/macros/s/YOUR_WEB_APP_URL/exec?supplier=${supplier}`)
                 .then(response => response.json())
                 .then(ingredients => {
                     let html = `<h2>Ingredients for ${supplier}</h2><form id="countForm">`;
@@ -72,7 +71,7 @@
                 timestamp: new Date().toISOString(),
             };
 
-            fetch('https://script.google.com/macros/s/AKfycbwlhlvnVio2qtDS8tfNxaGNnh5Mw7zc4CIsLxPQwgjV-sM4rPoUQyWJA6L2mRFKodxs/exec', {
+            fetch('https://script.google.com/macros/s/YOUR_WEB_APP_URL/exec', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
@@ -81,6 +80,8 @@
                 if (response.ok) {
                     alert('Stock counted successfully!');
                     document.getElementById('ingredientList').innerHTML = '';
+                } else {
+                    console.error('Submission failed:', response);
                 }
             })
             .catch(error => {
