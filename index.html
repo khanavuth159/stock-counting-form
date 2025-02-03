@@ -27,7 +27,7 @@
     <script>
         function loadIngredients() {
             const supplier = document.getElementById('supplier').value;
-            fetch(`https://script.google.com/macros/s/AKfycbzzF6DzWTkbseRr_QnE1d3774vIOmoul9Vydj54HD5mUgdFR-jLDbbvs-Mq1DnUqO6w/exec?supplier=${supplier}`)
+            fetch(`https://script.google.com/macros/s/AKfycbwmkcC41U3nH61528LOJZvPiHSJLSZwa8wZTXQu2Lc1OebQPVfrhJXOQcegmxHubWdF/exec?supplier=${supplier}`)
                 .then(response => response.json())
                 .then(ingredients => {
                     let html = `<h2>Ingredients for ${supplier}</h2><form id="countForm">`;
@@ -71,7 +71,7 @@
                 timestamp: new Date().toISOString(),
             };
 
-            fetch('https://script.google.com/macros/s/AKfycbzzF6DzWTkbseRr_QnE1d3774vIOmoul9Vydj54HD5mUgdFR-jLDbbvs-Mq1DnUqO6w/exec', {
+            fetch('https://script.google.com/macros/s/AKfycbwmkcC41U3nH61528LOJZvPiHSJLSZwa8wZTXQu2Lc1OebQPVfrhJXOQcegmxHubWdF/exec', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
